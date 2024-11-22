@@ -21,6 +21,8 @@ char	*free_join(char *buffer, char *chunk)
 	if (chunk == NULL)
 		return (buffer);
 	temporary = ft_strjoin(buffer, chunk);
+	if (temporary == NULL)
+		return (NULL);
 	free(buffer);
 	free(chunk);
 	return (temporary);
@@ -47,7 +49,7 @@ char	*read_files(int fd, char *buffer)
 		chunk[read_bytes] = '\0';
 		buffer = free_join(buffer, chunk);
 		if (buffer == NULL)
-			return (NULL);
+			return (free(chunk), NULL);
 		if (ft_strchr(chunk, '\n'))
 			break ;
 	}
@@ -82,9 +84,8 @@ char	*extract_lines(char *buffer)
 
 char	*next_line(char *buffer)
 {
-	int		i;
-	int		j;
-	char	*left;
+	char		*left;
+	int i int	j;
 
 	if (!buffer || !*buffer)
 		return (free(buffer), NULL);
@@ -119,6 +120,28 @@ char	*get_next_line(int fd)
 	if (buffer == NULL)
 		return (NULL);
 	txt_line = extract_lines(buffer);
+	if (txt_line == NULL)
+		return (free(buffer), NULL);
 	buffer = next_line(buffer);
 	return (txt_line);
 }
+
+/*int	main(void)
+{
+	int		fd;
+	char	*line;
+
+	fd = open("your_file.txt", O_RDONLY);
+	if (fd == -1)
+	{
+		perror("Error opening file");
+		return (1);
+	}
+	while ((line = get_next_line(fd)) != NULL)
+	{
+		printf("%s", line);
+		free(line);
+	}
+	close(fd);
+	return (0);
+}*/

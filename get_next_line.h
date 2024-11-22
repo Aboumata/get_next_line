@@ -17,7 +17,10 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <unistd.h>
-# define BUFFER_SIZE 24
+
+# ifndef BUFFER_SIZE
+#  define BUFFER_SIZE 24
+# endif
 
 char	*get_next_line(int fd);
 void	*ft_calloc(size_t num, size_t size);
