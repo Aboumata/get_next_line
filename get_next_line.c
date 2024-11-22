@@ -11,53 +11,114 @@
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-#define BUFFER_SIZE 10
 
-char *ft_free_buffer(char *read_byte, char* buffer)
+char	*free_join(char *buffer, char *chunk)
 {
-    char *temporary;
+	char	*temporary;
 
-    temporary = ft_strjoin(read_byte, buffer);
-    free(read_byte);
-    return (temporary);
+	if (buffer == NULL)
+		return (chunk);
+	if (chunk == NULL)
+		return (buffer);
+	temporary = ft_strjoin(buffer, chunk);
+	free(buffer);
+	free(chunk);
+	return (temporary);
 }
 
-char *read_lines(int fd, char* read_line)
+char	*read_files(int fd, char *buffer)
 {
-    char *buffer;
-    ssize_t read_byte;
+	char	*chunk;
+	ssize_t	read_bytes;
 
-    if (read_line == NULL)
-        return (NULL);
-    buffer = ft_calloc(BUFFER_SIZE + 1, sizeof(char));
-    read_byte = 1;
-    while (read_byte > 0)
-    {
-        read_byte = read(fd, buffer, BUFFER_SIZE);
-        if (read_byte <= 0)
-        {
-            free(buffer);
-            return (NULL);
-        }
-        buffer[read_byte] = '\0';
-        read_line =  ft_free_buffer(read_line, buffer);
-        if (ft_strchr(buffer, '\n'))
-            break;
-    }
-    free(buffer);
-    return (read_line);
+	if (buffer == NULL)
+		buffer = ft_calloc(1, sizeof(char));
+	if (buffer == NULL)
+		return (NULL);
+	chunk = ft_calloc(BUFFER_SIZE + 1, sizeof(char));
+	if (chunk == NULL)
+		return (NULL);
+	read_bytes = 1;
+	while (read_bytes > 0)
+	{
+		read_bytes = read(fd, chunk, BUFFER_SIZE);
+		if (read_bytes == -1)
+			return (free(chunk), free(buffer), NULL);
+		chunk[read_bytes] = '\0';
+		buffer = free_join(buffer, chunk);
+		if (buffer == NULL)
+			return (NULL);
+		if (ft_strchr(chunk, '\n'))
+			break ;
+	}
+	free(chunk);
+	return (buffer);
 }
 
-char *get_next_line(int fd)
+char	*extract_lines(char *buffer)
 {
-    static char *buffer;
-    char *line;
+	char	*lines;
+	int		i;
 
-    if (fd < 0 ||  BUFFER_SIZE <= 0)
-        return (NULL);
-    buffer = read_lines(fd, buffer);
-    if (buffer == NULL)
-        return (NULL);
+	if (buffer == NULL || !*buffer)
+		return (NULL);
+	i = 0;
+	while (buffer[i] && buffer[i] != '\n')
+		i++;
+	lines = ft_calloc(i + 2, sizeof(char));
+	if (lines == NULL)
+		return (NULL);
+	i = 0;
+	while (buffer[i] && buffer[i] != '\n')
+	{
+		lines[i] = buffer[i];
+		i++;
+	}
+	if (buffer[i] == '\n')
+		lines[i++] = '\n';
+	lines[i] = '\0';
+	return (lines);
+}
 
-    return ;
+char	*next_line(char *buffer)
+{
+	int		i;
+	int		j;
+	char	*left;
+
+	if (!buffer || !*buffer)
+		return (free(buffer), NULL);
+	i = 0;
+	while (buffer[i] && buffer[i] != '\n')
+		i++;
+	if (!buffer[i])
+		return (free(buffer), NULL);
+	left = ft_calloc(ft_strlen(buffer) - i + 1, sizeof(char));
+	if (left == NULL)
+		return (free(buffer), NULL);
+	j = 0;
+	while (buffer[i])
+	{
+		left[j] = buffer[i];
+		i++;
+		j++;
+	}
+	left[j] = '\0';
+	free(buffer);
+	return (left);
+}
+
+char	*get_next_line(int fd)
+{
+	static char	*buffer;
+	char		*txt_line;
+
+	if (fd < 0 || BUFFER_SIZE <= 0)
+		return (NULL);
+	buffer = read_files(fd, buffer);
+	if (buffer == NULL)
+		return (NULL);
+	txt_line = extract_lines(buffer);
+	buffer = next_line(buffer);
+	return (txt_line);
 }

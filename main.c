@@ -5,21 +5,32 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: aboumata <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 17:32:58 by aboumata          #+#    #+#             */
-/*   Updated: 2024/11/20 17:33:05 by aboumata         ###   ########.fr       */
+/*   Created: 2024/11/21 20:27:28 by aboumata          #+#    #+#             */
+/*   Updated: 2024/11/21 20:27:38 by aboumata         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 #include "get_next_line.h"
-int main ()
+
+int	main(void)
 {
-    int fd;
-    char txt[256];
-    ssize_t read_buff;
-    fd = open("example.txt", O_RDONLY | O_CREAT);
-    while ((read_buff = read(fd, txt, 10)))
-    {
-        txt[read_buff] = '\0';
-        printf("buff: %s\n", txt);
-    }
-    return 0;
+	int		fd;
+	char	*line;
+
+	fd = open("test_file.txt", O_RDONLY);
+	if (fd < 0)
+	{
+		perror("Error opening file");
+		return (1);
+	}
+	printf("Reading lines from the file:\n");
+	line = get_next_line(fd);
+	while (line != NULL)
+	{
+		printf("%s", line);
+		free(line);
+	}
+	close(fd);
+	printf("\nDone reading the file.\n");
+	return (0);
 }
