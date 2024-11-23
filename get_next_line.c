@@ -12,118 +12,110 @@
 
 #include "get_next_line.h"
 
-char	*free_join(char *buffer, char *chunk)
+char	*free_join(char *s1, char *s2)
 {
-	char	*temporary;
+	char	*joined_str;
 
-	if (buffer == NULL)
-		return (chunk);
-	if (chunk == NULL)
-		return (buffer);
-	temporary = ft_strjoin(buffer, chunk);
-	if (temporary == NULL)
+	if (!s1 && !s2)
 		return (NULL);
-	free(buffer);
-	free(chunk);
-	return (temporary);
+	joined_str = ft_strjoin(s1, s2);
+	if (s1)
+		free(s1);
+	return (joined_str);
 }
 
-char	*read_files(int fd, char *buffer)
+char	*read_files(int fd, char *buffer, char *saved)
 {
-	char	*chunk;
-	ssize_t	read_bytes;
-
-	if (buffer == NULL)
-		buffer = ft_calloc(1, sizeof(char));
-	if (buffer == NULL)
-		return (NULL);
-	chunk = ft_calloc(BUFFER_SIZE + 1, sizeof(char));
-	if (chunk == NULL)
-		return (NULL);
-	read_bytes = 1;
-	while (read_bytes > 0)
+	ssize_t	bytes_read;
+	char	*temp;
+	bytes_read = read(fd, buffer, BUFFER_SIZE);
+	while (bytes_read > 0)
 	{
-		read_bytes = read(fd, chunk, BUFFER_SIZE);
-		if (read_bytes == -1)
-			return (free(chunk), free(buffer), NULL);
-		chunk[read_bytes] = '\0';
-		buffer = free_join(buffer, chunk);
-		if (buffer == NULL)
-			return (free(chunk), NULL);
-		if (ft_strchr(chunk, '\n'))
+		buffer[bytes_read] = '\0';
+		temp = free_join(saved, buffer);
+		if (!temp)
+			return (free(saved), NULL);
+		saved = temp;
+		if (ft_strchr(saved, '\n'))
 			break ;
 	}
-	free(chunk);
-	return (buffer);
+	if (bytes_read < 0)
+		return (free(saved), NULL);
+	return (saved);
 }
 
-char	*extract_lines(char *buffer)
+char	*extract_line(char *saved)
 {
-	char	*lines;
-	int		i;
+	char	*line;
+	size_t	i;
 
-	if (buffer == NULL || !*buffer)
+	if (!saved || !*saved)
 		return (NULL);
 	i = 0;
-	while (buffer[i] && buffer[i] != '\n')
+	while (saved[i] && saved[i] != '\n')
 		i++;
-	lines = ft_calloc(i + 2, sizeof(char));
-	if (lines == NULL)
+	if (saved[i] == '\n')
+		i++;
+	line = (char *)ft_calloc(i + 1, sizeof(char));
+	if (!line)
 		return (NULL);
 	i = 0;
-	while (buffer[i] && buffer[i] != '\n')
+	while (saved[i] && saved[i] != '\n')
 	{
-		lines[i] = buffer[i];
+		line[i] = saved[i];
 		i++;
 	}
-	if (buffer[i] == '\n')
-		lines[i++] = '\n';
-	lines[i] = '\0';
-	return (lines);
+	if (saved[i] == '\n')
+		line[i++] = '\n';
+	line[i] = '\0';
+	return (line);
 }
 
-char	*next_line(char *buffer)
+char	*update_saved(char *saved)
 {
-	char		*left;
-	int i int	j;
+	char	*remaining;
+	size_t	i;
+	size_t	j;
 
-	if (!buffer || !*buffer)
-		return (free(buffer), NULL);
 	i = 0;
-	while (buffer[i] && buffer[i] != '\n')
+	while (saved[i] && saved[i] != '\n')
 		i++;
-	if (!buffer[i])
-		return (free(buffer), NULL);
-	left = ft_calloc(ft_strlen(buffer) - i + 1, sizeof(char));
-	if (left == NULL)
-		return (free(buffer), NULL);
+	if (!saved[i])
+		return (free(saved), NULL);
+	remaining = (char *)ft_calloc(ft_strlen(saved) - i, sizeof(char));
+	if (!remaining)
+		return (free(saved), NULL);
+	i++;
 	j = 0;
-	while (buffer[i])
-	{
-		left[j] = buffer[i];
-		i++;
-		j++;
-	}
-	left[j] = '\0';
-	free(buffer);
-	return (left);
+	while (saved[i])
+		remaining[j++] = saved[i++];
+	remaining[j] = '\0';
+	free(saved);
+	if (!*remaining)
+		return (free(remaining), NULL);
+	return (remaining);
 }
 
 char	*get_next_line(int fd)
 {
-	static char	*buffer;
-	char		*txt_line;
+	static char	*saved = NULL;
+	char		*buffer;
+	char		*line;
 
 	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
-	buffer = read_files(fd, buffer);
-	if (buffer == NULL)
+	buffer = (char *)ft_calloc(BUFFER_SIZE + 1, sizeof(char));
+	if (!buffer)
 		return (NULL);
-	txt_line = extract_lines(buffer);
-	if (txt_line == NULL)
-		return (free(buffer), NULL);
-	buffer = next_line(buffer);
-	return (txt_line);
+	saved = read_files(fd, buffer, saved);
+	free(buffer);
+	if (!saved)
+		return (NULL);
+	line = extract_line(saved);
+	if (!line)
+		return (free(saved), saved = NULL);
+	saved = update_saved(saved);
+	return (line);
 }
 
 /*int	main(void)

@@ -11,6 +11,48 @@
 /* ************************************************************************** */
 #include "get_next_line.h"
 
+size_t	ft_strlen(const char *s)
+{
+	size_t	len;
+
+	len = 0;
+	while (s && s[len])
+		len++;
+	return (len);
+}
+
+char	*ft_strjoin(const char *s1, const char *s2)
+{
+	char	*result;
+	size_t	len1;
+	size_t	len2;
+	size_t	i;
+
+	len1 = ft_strlen(s1);
+	len2 = ft_strlen(s2);
+	result = (char *)malloc((len1 + len2 + 1) * sizeof(char));
+	if (!result)
+		return (NULL);
+	i = 0;
+	while (s1 && *s1)
+		result[i++] = *s1++;
+	while (s2 && *s2)
+		result[i++] = *s2++;
+	result[i] = '\0';
+	return (result);
+}
+
+char	*ft_strchr(const char *s, int c)
+{
+	while (s && *s)
+	{
+		if ((unsigned char)*s == (unsigned char)c)
+			return ((char *)s);
+		s++;
+	}
+	return (NULL);
+}
+
 void	*ft_memset(void *ptr, int value, size_t num)
 {
 	size_t			i;
@@ -39,55 +81,4 @@ void	*ft_calloc(size_t num, size_t size)
 		return (NULL);
 	ft_memset(ptr, 0, total_size);
 	return (ptr);
-}
-
-size_t	ft_strlen(const char *s)
-{
-	size_t	i;
-
-	i = 0;
-	while (s[i] != '\0')
-		i++;
-	return (i);
-}
-
-char	*ft_strjoin(char const *s1, char const *s2)
-{
-	size_t	size;
-	int		i;
-	char	*concat_strs;
-
-	if (s1 == NULL)
-		s1 = "";
-	if (s2 == NULL)
-		s2 = "";
-	size = ft_strlen(s2) + ft_strlen(s1) + 1;
-	concat_strs = (char *)malloc(size);
-	if (concat_strs == NULL)
-		return (NULL);
-	i = 0;
-	while (*s1)
-		concat_strs[i++] = *s1++;
-	while (*s2)
-		concat_strs[i++] = *s2++;
-	concat_strs[i] = '\0';
-	return (concat_strs);
-}
-
-char	*ft_strchr(const char *string, int c)
-{
-	int				i;
-	unsigned char	c_char;
-
-	c_char = (unsigned char)c;
-	i = 0;
-	while (string[i] != '\0')
-	{
-		if ((unsigned char)string[i] == c_char)
-			return ((char *)string + i);
-		i++;
-	}
-	if (c_char == '\0')
-		return ((char *)string + i);
-	return (NULL);
 }
