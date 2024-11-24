@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aboumata <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 16:45:42 by aboumata          #+#    #+#             */
-/*   Updated: 2024/11/20 16:45:54 by aboumata         ###   ########.fr       */
+/*   Created: 2024/11/24 23:29:31 by aboumata          #+#    #+#             */
+/*   Updated: 2024/11/24 23:29:35 by aboumata         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 
 void	free_safe(char **ptr)
 {
@@ -73,47 +73,20 @@ char	*get_next_line(int fd)
 {
 	char		*line;
 	char		*buf;
-	static char	*backup;
+	static char	*backups[MAX_FDS];
 
-	if (fd < 0 || BUFFER_SIZE <= 0)
+	if (fd < 0 || fd >= MAX_FDS || BUFFER_SIZE <= 0)
 		return (NULL);
 	buf = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
 	if (buf == NULL)
 		return (NULL);
-	line = read_lines(fd, buf, &backup);
+	line = read_lines(fd, buf, &backups[fd]);
 	free_safe(&buf);
 	if (line == NULL)
 	{
-		free_safe(&backup);
+		free_safe(&backups[fd]);
 		return (NULL);
 	}
-	backup = extract(line);
+	backups[fd] = extract(line);
 	return (line);
 }
-
-/*
-int	main(int argc, char *argv[])
-{
-	int		fd;
-	char	*line;
-
-	if (argc == 2)
-	{
-		fd = open(argv[1], O_RDONLY);
-		if (fd == -1)
-		{
-			printf("ERROR OCCURRED WHEN OPENING THE FILE \n");
-			return (1);
-		}
-		while ((line = get_next_line(fd)) != NULL)
-		{
-			printf("%s", line);
-			free(line);
-		}
-		while(1);
-		close(fd);
-	}
-	printf("PLEASE ENTER A FILE \n");
-	return (0);
-}
-*/

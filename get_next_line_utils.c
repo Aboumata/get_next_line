@@ -28,12 +28,12 @@ char	*ft_strjoin(const char *s1, const char *s2)
 	size_t	len2;
 	size_t	i;
 
-	if (s1 == NULL)
-		s1 = "";
-	if (s2 == NULL)
-		s2 = "";
-	len1 = ft_strlen(s1);
-	len2 = ft_strlen(s2);
+	len1 = 0;
+	len2 = 0;
+	if (s1)
+		len1 = ft_strlen(s1);
+	if (s2)
+		len2 = ft_strlen(s2);
 	result = (char *)malloc((len1 + len2 + 1) * sizeof(char));
 	if (result == NULL)
 		return (NULL);
