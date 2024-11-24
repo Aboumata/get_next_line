@@ -12,128 +12,102 @@
 
 #include "get_next_line.h"
 
-char	*free_join(char *s1, char *s2)
+void	free_safe(char **ptr)
 {
-	char	*joined_str;
-
-	if (!s1 && !s2)
-		return (NULL);
-	joined_str = ft_strjoin(s1, s2);
-	if (s1)
-		free(s1);
-	return (joined_str);
+	if (ptr && *ptr)
+	{
+		free(*ptr);
+		*ptr = NULL;
+	}
 }
 
-char	*read_files(int fd, char *buffer, char *saved)
+static char	*read_lines(int fd, char *buf, char **backup)
 {
-	ssize_t	bytes_read;
-	char	*temp;
-	bytes_read = read(fd, buffer, BUFFER_SIZE);
-	while (bytes_read > 0)
+	int		read_line;
+	char	*char_temp;
+
+	read_line = 1;
+	while (read_line > 0)
 	{
-		buffer[bytes_read] = '\0';
-		temp = free_join(saved, buffer);
-		if (!temp)
-			return (free(saved), NULL);
-		saved = temp;
-		if (ft_strchr(saved, '\n'))
+		read_line = read(fd, buf, BUFFER_SIZE);
+		if (read_line == -1)
+			return (NULL);
+		buf[read_line] = '\0';
+		if (*backup == NULL)
+			*backup = ft_strdup("");
+		if (*backup == NULL)
+			return (NULL);
+		char_temp = *backup;
+		*backup = ft_strjoin(char_temp, buf);
+		free_safe(&char_temp);
+		if (*backup == NULL)
+			return (NULL);
+		if (ft_strchr(buf, '\n'))
 			break ;
 	}
-	if (bytes_read < 0)
-		return (free(saved), NULL);
-	return (saved);
+	if (*backup && **backup == '\0')
+		return (free_safe(backup), NULL);
+	return (*backup);
 }
 
-char	*extract_line(char *saved)
+static char	*extract(char *line)
 {
-	char	*line;
 	size_t	i;
+	char	*backup;
 
-	if (!saved || !*saved)
+	i = 0;
+	while (line[i] != '\n' && line[i] != '\0')
+		i++;
+	if (line[i] == '\0')
 		return (NULL);
-	i = 0;
-	while (saved[i] && saved[i] != '\n')
-		i++;
-	if (saved[i] == '\n')
-		i++;
-	line = (char *)ft_calloc(i + 1, sizeof(char));
-	if (!line)
+	backup = ft_substr(line, i + 1, ft_strlen(line) - i);
+	if (backup == NULL)
 		return (NULL);
-	i = 0;
-	while (saved[i] && saved[i] != '\n')
-	{
-		line[i] = saved[i];
-		i++;
-	}
-	if (saved[i] == '\n')
-		line[i++] = '\n';
-	line[i] = '\0';
-	return (line);
-}
-
-char	*update_saved(char *saved)
-{
-	char	*remaining;
-	size_t	i;
-	size_t	j;
-
-	i = 0;
-	while (saved[i] && saved[i] != '\n')
-		i++;
-	if (!saved[i])
-		return (free(saved), NULL);
-	remaining = (char *)ft_calloc(ft_strlen(saved) - i, sizeof(char));
-	if (!remaining)
-		return (free(saved), NULL);
-	i++;
-	j = 0;
-	while (saved[i])
-		remaining[j++] = saved[i++];
-	remaining[j] = '\0';
-	free(saved);
-	if (!*remaining)
-		return (free(remaining), NULL);
-	return (remaining);
+	if (*backup == '\0')
+		free_safe(&backup);
+	line[i + 1] = '\0';
+	return (backup);
 }
 
 char	*get_next_line(int fd)
 {
-	static char	*saved = NULL;
-	char		*buffer;
 	char		*line;
+	char		*buf;
+	static char	*backup;
 
 	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
-	buffer = (char *)ft_calloc(BUFFER_SIZE + 1, sizeof(char));
-	if (!buffer)
+	buf = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
+	if (buf == NULL)
 		return (NULL);
-	saved = read_files(fd, buffer, saved);
-	free(buffer);
-	if (!saved)
+	line = read_lines(fd, buf, &backup);
+	free_safe(&buf);
+	if (line == NULL)
+	{
+		free_safe(&backup);
 		return (NULL);
-	line = extract_line(saved);
-	if (!line)
-		return (free(saved), saved = NULL);
-	saved = update_saved(saved);
+	}
+	backup = extract(line);
 	return (line);
 }
 
-/*int	main(void)
+/*
+int main(void)
 {
-	int		fd;
-	char	*line;
+	int fd;
+	char *line;
 
-	fd = open("your_file.txt", O_RDONLY);
+	fd = open("test.txt", O_RDONLY);
 	if (fd == -1)
-	{
-		perror("Error opening file");
 		return (1);
-	}
+
 	while ((line = get_next_line(fd)) != NULL)
 	{
 		printf("%s", line);
 		free(line);
 	}
+	while(1);
 	close(fd);
-	return (0);
-}*/
+	return 0;
+}
+*/
