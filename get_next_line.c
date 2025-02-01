@@ -23,7 +23,7 @@ void	free_safe(char **ptr)
 
 static char	*read_lines(int fd, char *buf, char **backup)
 {
-	int		read_line;
+	ssize_t	read_line;
 	char	*char_temp;
 
 	read_line = 1;
@@ -90,24 +90,3 @@ char	*get_next_line(int fd)
 	backup = extract(line);
 	return (line);
 }
-/*
-int	main(int argc, char *argv[])
-{
-	int		fd;
-	char	*line;
-
-	if (argc == 2)
-	{
-		fd = open(argv[1], O_RDONLY);
-		if (fd == -1)
-			return (-1);
-		while ((line = get_next_line(fd)) != NULL)
-		{
-			printf("%s", line);
-			free(line);
-		}
-		close(fd);
-	}
-	return (0);
-}
-*/
