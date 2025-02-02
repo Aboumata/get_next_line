@@ -21,7 +21,7 @@ void	free_safe(char **ptr)
 	}
 }
 
-static char	*read_lines(int fd, char *buf, char **backup)
+char	*read_lines(int fd, char *buf, char **backup)
 {
 	ssize_t	read_line;
 	char	*char_temp;
@@ -50,7 +50,7 @@ static char	*read_lines(int fd, char *buf, char **backup)
 	return (*backup);
 }
 
-static char	*extract(char *line)
+char	*extract(char *line)
 {
 	size_t	i;
 	char	*backup;
@@ -82,7 +82,7 @@ char	*get_next_line(int fd)
 		return (NULL);
 	line = read_lines(fd, buf, &backup);
 	free_safe(&buf);
-	if (line == NULL)
+	if (line == NULL || *line == '\0')
 	{
 		free_safe(&backup);
 		return (NULL);
